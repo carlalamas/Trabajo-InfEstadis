@@ -66,7 +66,46 @@ table(muestra_polietap$UnidF)
 head(muestra_polietap)
 
 #' #### 5. Calcula la media de Gastos de las familias de la muestra del apartado anterior
+#' Media total
+mean(muestra_polietap$Gastos, na.rm=TRUE)
+
 #' Utilizamos la función tapply, para calcular la media de cada valor de UnidF para cada
 #' nivel económico
 tapply(muestra_polietap$Gastos,list(muestra_polietap$NivelEcon,muestra_polietap$UnidF),mean)
+
+
+#' ## Ejercicio 2
+
+#' #### 1. Calcula el valor de p
+#' Creamos un nuevo dataframe *Zumo_2* que solo contiene familias de Región 2
+#' y la unidad familiar consta de 1 o 2 miembros
+Zumo_2 <- Zumo[Zumo$Region==2 & Zumo$UnidF %in% c(1,2),]
+head(Zumo_2,10)
+
+#' La proporción entre familias de la Región 2 con 1 o 2 miembros 
+p <- nrow(Zumo_2) / nrow(Zumo[Zumo$Region==2,])
+print(p)  
+  
+  
+#' #### 2. Utilizando las fórmulas de la teoría, calcula el tamaño muestral n 
+#' #### necesario para estimar la proporción con un error máximo de 0.035
+#' ####  y una confianza del 95 %. Por estudios previos, sospechas que p $\approx$ 0.3.
+nivel_conf <- 0.95
+error_max <- 0.035
+
+#Creamos una función que nos permita obtener el tamaño mustral de una proporción
+n_size <- function(alpha,p,l) {
+  n <- (4*qnorm((1-alpha)/2,lower.tail = F)**2)*p*(1-p) / l**2 
+  n2 <- (qnorm((1-alpha)/2,lower.tail = F)**2)/ l**2 
+  df <-data.frame(n,n2)
+  names(df) <- c('p aproximado','peor caso')
+  return(df)
+}
+#' Tamaño muestral con $p \approx 0.3$ y peor caso $p = 1/2$
+n_size(nivel_conf,0.3,error_max)
+
+#' Tamaño muestral con $p=0.3686291$, calulado en el apartado interior y peor caso $p = 1/2$
+n_size(nivel_conf,p,error_max)
+
+
 
