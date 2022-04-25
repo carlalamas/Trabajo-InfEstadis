@@ -449,12 +449,14 @@ print(n)</code></pre>
 económico y de los valores de UnidF</p>
 <pre class="r"><code>sp &lt;- split(Zumo, list(Zumo$NivelEcon, Zumo$UnidF))</code></pre>
 <p>Obtenemos las muestras de tamaño 253 para cada valor de UnidF de cada
-nivel económico</p>
-<pre class="r"><code>samples &lt;- lapply(sp, function(x) x[sample(1:nrow(x), n, TRUE),])
-muestra_polietap &lt;- do.call(rbind, samples)
+nivel económico La muestra es ligeramente inferior al 0.01 de la
+población ya que no existen familias con cierto numero de unidad
+familiar y determinado nivel económico</p>
+<pre class="r"><code>sample_df &lt;- lapply(sp, function(x) x[sample(1:nrow(x), n, TRUE),])
+muestra_polietap &lt;- do.call(rbind, sample_df)
 # Dimensión de la muestra completa
 dim(muestra_polietap)</code></pre>
-<pre><code>## [1] 8971    7</code></pre>
+<pre><code>## [1] 8962    7</code></pre>
 <p>La cantidad de familias para cada nivel económico es de:</p>
 <pre class="r"><code>table(muestra_polietap$NivelEcon)</code></pre>
 <pre><code>## 
@@ -467,30 +469,33 @@ dim(muestra_polietap)</code></pre>
 ## 759 759 759 759 759 759 759 759 506 506 506 253 253</code></pre>
 <pre class="r"><code>head(muestra_polietap)</code></pre>
 <pre><code>##                   Id Ingresos Gastos PcGastos UnidF NivelEcon Region
-## bajo.1.957463 957463    18157   3631    20.00     1      bajo     10
-## bajo.1.449717 449717    10049   2569    25.56     1      bajo     19
-## bajo.1.522356 522356     7834   2710    34.59     1      bajo     19
-## bajo.1.124307 124307    27746   4662    16.80     1      bajo      5
-## bajo.1.443058 443058     7398   1981    26.78     1      bajo     19
-## bajo.1.654871 654871    13020   3266    25.08     1      bajo     12</code></pre>
+## bajo.1.918383 918383    15009   3311    22.06     1      bajo      3
+## bajo.1.511029 511029    29577   4063    13.74     1      bajo      1
+## bajo.1.335535 335535    17760   2594    14.61     1      bajo     19
+## bajo.1.836179 836179    24303   4346    17.88     1      bajo     19
+## bajo.1.19077   19077    10675   2943    27.57     1      bajo      5
+## bajo.1.23758   23758    25172   4242    16.85     1      bajo     14</code></pre>
 </div>
 <div id="calcula-la-media-de-gastos-de-las-familias-de-la-muestra-del-apartado-anterior" class="section level4">
 <h4>5. Calcula la media de Gastos de las familias de la muestra del
 apartado anterior</h4>
 <p>Media total</p>
 <pre class="r"><code>mean(muestra_polietap$Gastos, na.rm=TRUE)</code></pre>
-<pre><code>## [1] 10558.15</code></pre>
+<pre><code>## [1] 10479.17</code></pre>
 <p>Utilizamos la función tapply, para calcular la media de cada valor de
-UnidF para cada nivel económico</p>
+UnidF para cada nivel económico. Se puede observar que hay medias con
+valores nulos ya que no existen familias de nibel bajo con 9,10,11,12,13
+UnidF por ejemplo, esto explica poruqé la mustra polietápica obtenida
+anteriormente resulta ligeramente inferior al <span class="math inline">\(0.01\)</span> de la población</p>
 <pre class="r"><code>tapply(muestra_polietap$Gastos,list(muestra_polietap$NivelEcon,muestra_polietap$UnidF),mean)</code></pre>
 <pre><code>##               1         2         3         4         5         6         7
-## bajo   3554.676  4054.976  4659.332  4409.134  4411.146  4449.332  4657.387
-## medio  5751.680  6726.158  7925.490  9204.332  9110.490  9147.229  9306.474
-## alto  15142.846 15330.178 16542.980 18174.838 18062.806 18335.103 18143.684
-##               8         9        10        11       12   13
-## bajo   3715.000        NA        NA        NA       NA   NA
-## medio  9119.281  8964.455  8661.957  9455.557 8448.324 9873
-## alto  17637.775 17155.387 18761.253 18968.427       NA   NA</code></pre>
+## bajo   3457.229  4087.130  4543.992  4370.502  4502.455  4427.419  4698.542
+## medio  5822.032  6725.767  7768.146  9089.221  9145.209  9244.407  9121.103
+## alto  14391.233 15685.419 15819.217 17254.237 17747.451 18248.028 18212.067
+##              8         9        10        11       12   13
+## bajo   3715.00        NA        NA        NA       NA   NA
+## medio  8854.47  9101.482  8653.427  9283.245 8479.194 9873
+## alto  17936.23 17723.688 18561.834 18791.059       NA   NA</code></pre>
 </div>
 </div>
 <div id="ejercicio-2" class="section level2">
@@ -533,8 +538,12 @@ error_max &lt;- 0.035
 
 #Creamos una función que nos permita obtener el tamaño mustral de una proporción
 n_size &lt;- function(alpha,p,l) {
+  # tamaño muestral con p aproximado
   n &lt;- (4*qnorm((1-alpha)/2,lower.tail = F)**2)*p*(1-p) / l**2 
+  
+  # tamaño muestral en el peor caso
   n2 &lt;- (qnorm((1-alpha)/2,lower.tail = F)**2)/ l**2 
+  
   df &lt;-data.frame(n,n2)
   names(df) &lt;- c(&#39;p aproximado&#39;,&#39;peor caso&#39;)
   return(df)

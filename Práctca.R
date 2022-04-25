@@ -51,8 +51,10 @@ print(n)
 sp <- split(Zumo, list(Zumo$NivelEcon, Zumo$UnidF))
 
 #' Obtenemos las muestras de tamaño 253 para cada valor de UnidF de cada nivel económico
-samples <- lapply(sp, function(x) x[sample(1:nrow(x), n, TRUE),])
-muestra_polietap <- do.call(rbind, samples)
+#' La muestra es ligeramente inferior al 0.01 de la población ya que no existen familias con
+#' cierto numero de unidad familiar y determinado nivel económico
+sample_df <- lapply(sp, function(x) x[sample(1:nrow(x), n, TRUE),])
+muestra_polietap <- do.call(rbind, sample_df)
 # Dimensión de la muestra completa
 dim(muestra_polietap)
 
@@ -70,7 +72,9 @@ head(muestra_polietap)
 mean(muestra_polietap$Gastos, na.rm=TRUE)
 
 #' Utilizamos la función tapply, para calcular la media de cada valor de UnidF para cada
-#' nivel económico
+#' nivel económico. Se puede observar que hay medias con valores nulos ya que no existen familias
+#' de nibel bajo con 9,10,11,12,13 UnidF por ejemplo, esto explica poruqé la mustra polietápica
+#' obtenida anteriormente resulta ligeramente inferior al $0.01$ de la población
 tapply(muestra_polietap$Gastos,list(muestra_polietap$NivelEcon,muestra_polietap$UnidF),mean)
 
 
@@ -95,8 +99,12 @@ error_max <- 0.035
 
 #Creamos una función que nos permita obtener el tamaño mustral de una proporción
 n_size <- function(alpha,p,l) {
+  # tamaño muestral con p aproximado
   n <- (4*qnorm((1-alpha)/2,lower.tail = F)**2)*p*(1-p) / l**2 
+  
+  # tamaño muestral en el peor caso
   n2 <- (qnorm((1-alpha)/2,lower.tail = F)**2)/ l**2 
+  
   df <-data.frame(n,n2)
   names(df) <- c('p aproximado','peor caso')
   return(df)
