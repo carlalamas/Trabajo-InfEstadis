@@ -53,7 +53,7 @@ sp <- split(Zumo, list(Zumo$NivelEcon, Zumo$UnidF))
 #' Obtenemos las muestras de tamaño 253 para cada valor de UnidF de cada nivel económico
 #' La muestra es ligeramente inferior al 0.01 de la población ya que no existen familias con
 #' cierto numero de unidad familiar y determinado nivel económico
-sample_df <- lapply(sp, function(x) x[sample(1:nrow(x), n, TRUE),])
+sample_df <- lapply(sp, function(x) x[sample(1:nrow(x), ceiling(length(x[['Id']])*0.01), TRUE),])
 muestra_polietap <- do.call(rbind, sample_df)
 # Dimensión de la muestra completa
 dim(muestra_polietap)
@@ -61,9 +61,12 @@ dim(muestra_polietap)
 #' La cantidad de familias para cada nivel económico es de:
 table(muestra_polietap$NivelEcon)
 
+
 #' La cantidad de familias para valor de UnidF es de:
 table(muestra_polietap$UnidF)
 
+#' Tamaño muestras según numero de miembros familia y nivel económico 
+table(muestra_polietap$NivelEcon,muestra_polietap$UnidF)
 
 head(muestra_polietap)
 

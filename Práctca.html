@@ -452,36 +452,44 @@ económico y de los valores de UnidF</p>
 nivel económico La muestra es ligeramente inferior al 0.01 de la
 población ya que no existen familias con cierto numero de unidad
 familiar y determinado nivel económico</p>
-<pre class="r"><code>sample_df &lt;- lapply(sp, function(x) x[sample(1:nrow(x), n, TRUE),])
+<pre class="r"><code>sample_df &lt;- lapply(sp, function(x) x[sample(1:nrow(x), ceiling(length(x[[&#39;Id&#39;]])*0.01), TRUE),])
 muestra_polietap &lt;- do.call(rbind, sample_df)
 # Dimensión de la muestra completa
 dim(muestra_polietap)</code></pre>
-<pre><code>## [1] 8962    7</code></pre>
+<pre><code>## [1] 9881    7</code></pre>
 <p>La cantidad de familias para cada nivel económico es de:</p>
 <pre class="r"><code>table(muestra_polietap$NivelEcon)</code></pre>
 <pre><code>## 
 ##  bajo medio  alto 
-##  2024  3289  2783</code></pre>
+##  1368  7634   879</code></pre>
 <p>La cantidad de familias para valor de UnidF es de:</p>
 <pre class="r"><code>table(muestra_polietap$UnidF)</code></pre>
 <pre><code>## 
-##   1   2   3   4   5   6   7   8   9  10  11  12  13 
-## 759 759 759 759 759 759 759 759 506 506 506 253 253</code></pre>
+##    1    2    3    4    5    6    7    8    9   10   11   12   13 
+## 1128 2515 2778 1946  973  375  120   32    7    3    2    1    1</code></pre>
+<p>Tamaño muestras según numero de miembros familia y nivel
+económico</p>
+<pre class="r"><code>table(muestra_polietap$NivelEcon,muestra_polietap$UnidF)</code></pre>
+<pre><code>##        
+##            1    2    3    4    5    6    7    8    9   10   11   12   13
+##   bajo   612  490  198   53   11    2    1    1    0    0    0    0    0
+##   medio  462 1817 2316 1699  862  334  106   27    6    2    1    1    1
+##   alto    54  208  264  194  100   39   13    4    1    1    1    0    0</code></pre>
 <pre class="r"><code>head(muestra_polietap)</code></pre>
 <pre><code>##                   Id Ingresos Gastos PcGastos UnidF NivelEcon Region
-## bajo.1.918383 918383    15009   3311    22.06     1      bajo      3
-## bajo.1.511029 511029    29577   4063    13.74     1      bajo      1
-## bajo.1.335535 335535    17760   2594    14.61     1      bajo     19
-## bajo.1.836179 836179    24303   4346    17.88     1      bajo     19
-## bajo.1.19077   19077    10675   2943    27.57     1      bajo      5
-## bajo.1.23758   23758    25172   4242    16.85     1      bajo     14</code></pre>
+## bajo.1.938070 938070    26975   3738    13.86     1      bajo     21
+## bajo.1.240112 240112     8668   2577    29.73     1      bajo      6
+## bajo.1.865415 865415     7553   2768    36.65     1      bajo     19
+## bajo.1.732971 732971     9490   2372    24.99     1      bajo      3
+## bajo.1.149475 149475    10416   2745    26.35     1      bajo      9
+## bajo.1.899638 899638     7951   2698    33.93     1      bajo      1</code></pre>
 </div>
 <div id="calcula-la-media-de-gastos-de-las-familias-de-la-muestra-del-apartado-anterior" class="section level4">
 <h4>5. Calcula la media de Gastos de las familias de la muestra del
 apartado anterior</h4>
 <p>Media total</p>
 <pre class="r"><code>mean(muestra_polietap$Gastos, na.rm=TRUE)</code></pre>
-<pre><code>## [1] 10479.17</code></pre>
+<pre><code>## [1] 8227.051</code></pre>
 <p>Utilizamos la función tapply, para calcular la media de cada valor de
 UnidF para cada nivel económico. Se puede observar que hay medias con
 valores nulos ya que no existen familias de nibel bajo con 9,10,11,12,13
@@ -489,13 +497,13 @@ UnidF por ejemplo, esto explica poruqé la mustra polietápica obtenida
 anteriormente resulta ligeramente inferior al <span class="math inline">\(0.01\)</span> de la población</p>
 <pre class="r"><code>tapply(muestra_polietap$Gastos,list(muestra_polietap$NivelEcon,muestra_polietap$UnidF),mean)</code></pre>
 <pre><code>##               1         2         3         4         5         6         7
-## bajo   3457.229  4087.130  4543.992  4370.502  4502.455  4427.419  4698.542
-## medio  5822.032  6725.767  7768.146  9089.221  9145.209  9244.407  9121.103
-## alto  14391.233 15685.419 15819.217 17254.237 17747.451 18248.028 18212.067
-##              8         9        10        11       12   13
-## bajo   3715.00        NA        NA        NA       NA   NA
-## medio  8854.47  9101.482  8653.427  9283.245 8479.194 9873
-## alto  17936.23 17723.688 18561.834 18791.059       NA   NA</code></pre>
+## bajo   3568.312  4075.427  4461.126  4552.849  4415.909  4621.500  3860.000
+## medio  5903.063  6865.415  7898.127  9123.606  9020.167  8968.225  9276.462
+## alto  15399.815 15148.976 16524.545 18959.459 17839.350 16861.436 18139.538
+##              8         9    10    11   12   13
+## bajo   3715.00        NA    NA    NA   NA   NA
+## medio  9308.63  9601.167  8067  9500 8922 9873
+## alto  13683.00 16348.000 29203 17717   NA   NA</code></pre>
 </div>
 </div>
 <div id="ejercicio-2" class="section level2">
