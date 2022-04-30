@@ -402,63 +402,51 @@ print(N)</code></pre>
 <div id="calcula-las-medias-de-gastos-de-las-familias-para-cada-uno-de-los-valores-de-unidf" class="section level4">
 <h4>3. Calcula las medias de Gastos de las familias para cada uno de los
 valores de <em>UnidF</em></h4>
-<p>Tenemos que calcular la media de gastos en base a los distintos
-valores de unidF qu son:</p>
-<pre class="r"><code>unidf &lt;- unique(Zumo$UnidF)</code></pre>
 <p>Hacemos uso de la función <em>tapply</em> para calcular la media de
-cada <em>Unidf</em></p>
-<pre class="r"><code>media_gasto &lt;- tapply(Zumo$Gastos,Zumo$UnidF, mean)
-df_media &lt;- data.frame(unidf,media_gasto)
-
-# Ordenamos el dataframe por la columna unidF
-df_media &lt;- df_media[order(df_media$unidf), ]
-print(df_media)</code></pre>
-<pre><code>##    unidf media_gasto
-## 3      1    8436.723
-## 4      2    9849.752
-## 1      3    5022.597
-## 5      4    9942.984
-## 2      5    7028.593
-## 6      6   10003.760
-## 7      7   10005.410
-## 8      8    9998.200
-## 9      9   10044.899
-## 10    10    9591.314
-## 11    11   10477.778
-## 12    12    8475.333
-## 13    13    9873.000</code></pre>
+cada <em>Unidf</em> y lo convertimos a un <em>data frame</em></p>
+<pre class="r"><code>df_media_gasto &lt;- data.frame(media_gastos = tapply(Zumo$Gastos,Zumo$UnidF, mean))
+print(df_media_gasto)</code></pre>
+<pre><code>##    media_gastos
+## 1      5022.597
+## 2      7028.593
+## 3      8436.723
+## 4      9849.752
+## 5      9942.984
+## 6     10003.760
+## 7     10005.410
+## 8      9998.200
+## 9     10044.899
+## 10     9591.314
+## 11    10477.778
+## 12     8475.333
+## 13     9873.000</code></pre>
 </div>
-<div id="realiza-un-muestreo-polietápico-considerando-como-estratos-tanto-unidf" class="section level4">
+<div id="realiza-un-muestreo-polietápico-considerando-como-estratos-tanto-unidf-como-nivelecon." class="section level4">
 <h4>4. Realiza un muestreo polietápico considerando como estratos tanto
-UnidF</h4>
+UnidF como NivelEcon.</h4>
 </div>
-<div id="como-nivelecon.-con-afijación-proporcional-al-1" class="section level4">
-<h4>como NivelEcon. Con afijación proporcional al <span class="math inline">\(1%\)</span></h4>
-<p>Con la función split, dividimos el dataframe de la población en base
-al nivel económico y de los valores de UnidF</p>
-<pre class="r"><code>Zumo_split &lt;- split(Zumo, list(Zumo$NivelEcon, Zumo$UnidF))</code></pre>
-<p>Obtenemos las muestras de <span class="math inline">\(1%\)</span>
-para cada valor de UnidF de cada nivel económico Creamos la función
-<em>sample_df</em> en la que obtenemos una muestra de tamaño <span class="math inline">\(1%\)</span> para cada estrato.</p>
-<pre class="r"><code># Se utiliza la sentencia &quot;ceiling(length(x[[&#39;Id&#39;]])*0.01)&quot; para calcular el tamaño
-# de la muestra de ese estrato, contando el numero de familias, multiplicándolo
-# por 0.01 y rodeondeando hacia arriba con &quot;celling&quot;
-sample_df &lt;- lapply(Zumo_split, function(x) x[sample(1:nrow(x), ceiling(length(x[[&#39;Id&#39;]])*0.01), TRUE),])
+<div id="con-afijación-proporcional-al-1" class="section level4">
+<h4>Con afijación proporcional al <span class="math inline">\(1\%\)</span></h4>
+<p>Con la función <em>split</em>, dividimos el dataframe de la población
+en base al nivel económico y de los valores de <em>UnidF</em> para
+obtener las muestras con afijación proporcinal definimos una función
+<em>lapply</em> para aplicar la función creada para obtener una mustra
+del <span class="math inline">\(1\%\)</span>. para cada lista obtenida
+en el <em>split</em> realizado anteriormente.</p>
+<pre class="r"><code>Zumo_split &lt;- split(Zumo, list(Zumo$NivelEcon, Zumo$UnidF))
+
+
+# Utilizamos la función lapply para 
+# Se utiliza la sentencia &quot;ceiling(length(x[[&#39;Id&#39;]])*0.01)&quot; para calcular el tamaño
+# de la muestra de ese estrato, contando el numero de familias (el número de &#39;Id&#39; concretamente),
+# multiplicándolo por 0.01 y rodeondeando hacia arriba con &quot;celling&quot;
+n &lt;- 0.01
+sample_df &lt;- lapply(Zumo_split, function(x) x[sample(1:nrow(x), ceiling(length(x[[&#39;Id&#39;]])*n), TRUE),])
 muestra_polietap &lt;- do.call(rbind, sample_df)
 
 # Dimensión de la muestra completa
 dim(muestra_polietap)</code></pre>
 <pre><code>## [1] 9881    7</code></pre>
-<p>Tamaño de la muestra para cada nivel económico es de:</p>
-<pre class="r"><code>table(muestra_polietap$NivelEcon)</code></pre>
-<pre><code>## 
-##  bajo medio  alto 
-##  1368  7634   879</code></pre>
-<p>tamaña de la muestra para cada valor de UnidF es de:</p>
-<pre class="r"><code>table(muestra_polietap$UnidF)</code></pre>
-<pre><code>## 
-##    1    2    3    4    5    6    7    8    9   10   11   12   13 
-## 1128 2515 2778 1946  973  375  120   32    7    3    2    1    1</code></pre>
 <p>Tamaño muestras según numero de miembros familia y nivel
 económico</p>
 <pre class="r"><code>table(muestra_polietap$NivelEcon,muestra_polietap$UnidF)</code></pre>
@@ -467,34 +455,26 @@ económico</p>
 ##   bajo   612  490  198   53   11    2    1    1    0    0    0    0    0
 ##   medio  462 1817 2316 1699  862  334  106   27    6    2    1    1    1
 ##   alto    54  208  264  194  100   39   13    4    1    1    1    0    0</code></pre>
-<pre class="r"><code>head(muestra_polietap)</code></pre>
-<pre><code>##                   Id Ingresos Gastos PcGastos UnidF NivelEcon Region
-## bajo.1.184813 184813    15192   2656    17.48     1      bajo     23
-## bajo.1.161762 161762    13065   3180    24.34     1      bajo      2
-## bajo.1.855681 855681    21314   3750    17.59     1      bajo     12
-## bajo.1.914709 914709    16216   3727    22.98     1      bajo     22
-## bajo.1.303163 303163    11186   2596    23.21     1      bajo      6
-## bajo.1.373883 373883    19898   3695    18.57     1      bajo     20</code></pre>
 </div>
 <div id="calcula-la-media-de-gastos-de-las-familias-de-la-muestra-del-apartado-anterior" class="section level4">
 <h4>5. Calcula la media de Gastos de las familias de la muestra del
 apartado anterior</h4>
 <p>Media total de la muestra</p>
 <pre class="r"><code>mean(muestra_polietap$Gastos, na.rm=TRUE)</code></pre>
-<pre><code>## [1] 8238.782</code></pre>
+<pre><code>## [1] 8191.635</code></pre>
 <p>Utilizamos la función tapply, para calcular la media de cada valor de
 UnidF para cada nivel económico. Se puede observar que hay medias con
 valores nulos ya que no existen familias de nibel bajo con 9,10,11,12,13
 UnidF por ejemplo.</p>
 <pre class="r"><code>tapply(muestra_polietap$Gastos,list(muestra_polietap$NivelEcon,muestra_polietap$UnidF),mean)</code></pre>
-<pre><code>##               1         2         3         4         5         6        7
-## bajo   3560.500  4057.200  4623.268  4290.396  4490.818  4510.500  4396.00
-## medio  5911.424  6820.417  7839.129  9103.819  9162.444  9103.955  9053.50
-## alto  14414.963 16676.207 17076.712 17497.974 16801.880 20649.615 20216.85
-##               8        9    10    11   12   13
-## bajo   3715.000       NA    NA    NA   NA   NA
-## medio  9441.741 10250.67  8377  8035 8012 9873
-## alto  18402.500 18504.00 18823 17717   NA   NA</code></pre>
+<pre><code>##               1         2         3         4         5         6         7
+## bajo   3474.381  4008.573  4429.313  4406.113  4239.909  3708.500  4575.000
+## medio  5828.195  6842.259  7799.714  9021.354  9138.443  9094.958  9250.821
+## alto  14665.222 16041.024 16218.008 18902.412 18030.130 18730.282 16015.615
+##               8     9    10    11   12   13
+## bajo   3715.000    NA    NA    NA   NA   NA
+## medio  8549.259  9379  8688  8029 8012 9873
+## alto  16666.500 14682 17848 17717   NA   NA</code></pre>
 </div>
 </div>
 <div id="ejercicio-2" class="section level2">
@@ -516,7 +496,9 @@ head(Zumo_2,10)</code></pre>
 ## 363 363    53163   7441    14.00     2     medio      2
 ## 372 372    27826   4230    15.20     1      bajo      2
 ## 395 395    41191   5753    13.97     2     medio      2</code></pre>
-<p>La proporción entre familias de la Región 2 con 1 o 2 miembros</p>
+<p>La proporción entre familias de la Región 2 con 1 o 2 miembros la
+proporción en nuestro caso viene determinada por <span class="math inline">\(\frac{familias \ en \ Zumo2}{familias \ de \
+región \ 2 \ en \ Zumo}\)</span></p>
 <pre class="r"><code>p &lt;- nrow(Zumo_2) / nrow(Zumo[Zumo$Region==2,])
 print(p)  </code></pre>
 <pre><code>## [1] 0.3686291</code></pre>
@@ -532,17 +514,21 @@ n</h4>
 <div id="y-una-confianza-del-95-.-por-estudios-previos-sospechas-que-p-approx-0.3." class="section level4">
 <h4>y una confianza del 95 %. Por estudios previos, sospechas que p
 <span class="math inline">\(\approx\)</span> 0.3.</h4>
+<p><span class="math inline">\(n = \frac{4 \ Z_{\frac{\alpha}{2}}^2 \ p
+\ (1-p)}{error^2} \\ n2 = \frac{Z_{\frac{\alpha}{2}}^2
+}{error^2}\)</span></p>
 <pre class="r"><code>nivel_conf &lt;- 0.95
 error_max &lt;- 0.035
-
+p &lt;- 0.3
 #Creamos una función que nos permita obtener el tamaño mustral de una proporción
-n_size &lt;- function(nivel_conf,p,l) {
+n_size &lt;- function(nivel_conf,p,error) {
   alpha &lt;- (1-nivel_conf)/2
+  l &lt;- 2*error
   # tamaño muestral con p aproximado
-  n &lt;- (4*qnorm(alpha,lower.tail = F)**2)*p*(1-p) / l**2 
+  n &lt;- ceiling((4*qnorm(alpha,lower.tail = F)**2)*p*(1-p) / l**2 )
   
   # tamaño muestral en el peor caso
-  n2 &lt;- (qnorm(alpha/2,lower.tail = F)**2)/ l**2 
+  n2 &lt;- ceiling((qnorm(alpha/2,lower.tail = F)**2)/ l**2 )
   
   df &lt;-data.frame(n,n2)
   names(df) &lt;- c(&#39;p aproximado&#39;,&#39;peor caso&#39;)
@@ -551,14 +537,9 @@ n_size &lt;- function(nivel_conf,p,l) {
 <p>Tamaño muestral con <span class="math inline">\(p \approx
 0.3\)</span> y peor caso <span class="math inline">\(p =
 1/2\)</span></p>
-<pre class="r"><code>n_size(nivel_conf,0.3,error_max)</code></pre>
-<pre><code>##   p aproximado peor caso
-## 1     2634.143  4101.132</code></pre>
-<p>Tamaño muestral con <span class="math inline">\(p=0.3686291\)</span>
-(calulado en el apartado interior) y peor caso <span class="math inline">\(p = 1/2\)</span></p>
 <pre class="r"><code>n_size(nivel_conf,p,error_max)</code></pre>
 <pre><code>##   p aproximado peor caso
-## 1     2919.404  4101.132</code></pre>
+## 1          659      1026</code></pre>
 </div>
 </div>
 

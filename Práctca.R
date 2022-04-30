@@ -21,48 +21,38 @@ print(N)
 mean(Zumo$Gastos)
 
 #' #### 3. Calcula las medias de Gastos de las familias para cada uno de los valores de *UnidF*
-#' Tenemos que calcular la media de gastos en base a los distintos valores de unidF qu son:
-unidf <- unique(Zumo$UnidF)
-
 #' Hacemos uso de la función *tapply* para calcular la media de cada *Unidf*
-media_gasto <- tapply(Zumo$Gastos,Zumo$UnidF, mean)
-df_media <- data.frame(unidf,media_gasto)
-
-# Ordenamos el dataframe por la columna unidF
-df_media <- df_media[order(df_media$unidf), ]
-print(df_media)
-
-#' #### 4. Realiza un muestreo polietápico considerando como estratos tanto UnidF 
-#' #### como NivelEcon. Con afijación proporcional al $1%$
+#' y lo convertimos a un *data frame*
+df_media_gasto <- data.frame(media_gastos = tapply(Zumo$Gastos,Zumo$UnidF, mean))
+print(df_media_gasto)
 
 
-#' Con la función split, dividimos el dataframe de la población en base al nivel
-#' económico y de los valores de UnidF
+
+#' #### 4. Realiza un muestreo polietápico considerando como estratos tanto UnidF como NivelEcon. 
+#' #### Con afijación proporcional al $1\%$ 
+
+#' Con la función *split*, dividimos el dataframe de la población en base al nivel
+#' económico y de los valores de *UnidF*
+#' para obtener las muestras con afijación proporcinal definimos una función *lapply* para aplicar
+#'la función creada para obtener una mustra del $1\%$.
+#' para cada lista obtenida en el *split* realizado anteriormente.
 Zumo_split <- split(Zumo, list(Zumo$NivelEcon, Zumo$UnidF))
 
-#' Obtenemos las muestras de $1%$ para cada valor de UnidF de cada nivel económico
-#' Creamos la función *sample_df* en la que obtenemos una muestra de tamaño $1%$
-#' para cada estrato.
+
+# Utilizamos la función lapply para 
 # Se utiliza la sentencia "ceiling(length(x[['Id']])*0.01)" para calcular el tamaño
-# de la muestra de ese estrato, contando el numero de familias, multiplicándolo
-# por 0.01 y rodeondeando hacia arriba con "celling"
-sample_df <- lapply(Zumo_split, function(x) x[sample(1:nrow(x), ceiling(length(x[['Id']])*0.01), TRUE),])
+# de la muestra de ese estrato, contando el numero de familias (el número de 'Id' concretamente),
+# multiplicándolo por 0.01 y rodeondeando hacia arriba con "celling"
+n <- 0.01
+sample_df <- lapply(Zumo_split, function(x) x[sample(1:nrow(x), ceiling(length(x[['Id']])*n), TRUE),])
 muestra_polietap <- do.call(rbind, sample_df)
 
 # Dimensión de la muestra completa
 dim(muestra_polietap)
 
-#' Tamaño de la muestra para cada nivel económico es de:
-table(muestra_polietap$NivelEcon)
-
-
-#' tamaña de la muestra para cada valor de UnidF es de:
-table(muestra_polietap$UnidF)
-
 #' Tamaño muestras según numero de miembros familia y nivel económico 
 table(muestra_polietap$NivelEcon,muestra_polietap$UnidF)
 
-head(muestra_polietap)
 
 #' #### 5. Calcula la media de Gastos de las familias de la muestra del apartado anterior
 #' Media total de la muestra
@@ -76,40 +66,41 @@ tapply(muestra_polietap$Gastos,list(muestra_polietap$NivelEcon,muestra_polietap$
 
 #' ## Ejercicio 2
 
-#' #### 1. Calcula el valor de p
+#' #### 1. Calcula proporción p de familias de la Región 2 en las que la unidad familiar consta de 1 o 2 miembros.
 #' Creamos un nuevo dataframe *Zumo_2* que solo contiene familias de Región 2
 #' y la unidad familiar consta de 1 o 2 miembros.
 Zumo_2 <- Zumo[Zumo$Region==2 & Zumo$UnidF %in% c(1,2),]
 head(Zumo_2,10)
 
 #' La proporción entre familias de la Región 2 con 1 o 2 miembros 
+#' la proporción en nuestro caso viene determinada por $\frac{familias \ en \ Zumo2}{familias \ de \ región \ 2 \ en \ Zumo}$
 p <- nrow(Zumo_2) / nrow(Zumo[Zumo$Region==2,])
 print(p)  
-  
   
 #' #### 2. Utilizando las fórmulas de la teoría, calcula el tamaño muestral n 
 #' #### necesario para estimar la proporción con un error máximo de 0.035
 #' ####  y una confianza del 95 %. Por estudios previos, sospechas que p $\approx$ 0.3.
+#' $n = \frac{4 \ Z_{\frac{\alpha}{2}}^2 \ p \ (1-p)}{error^2}
+#' \\ n2 = \frac{Z_{\frac{\alpha}{2}}^2 }{error^2}$
+
 nivel_conf <- 0.95
 error_max <- 0.035
-
+p <- 0.3
 #Creamos una función que nos permita obtener el tamaño mustral de una proporción
-n_size <- function(nivel_conf,p,l) {
+n_size <- function(nivel_conf,p,error) {
   alpha <- (1-nivel_conf)/2
+  l <- 2*error
   # tamaño muestral con p aproximado
-  n <- (4*qnorm(alpha,lower.tail = F)**2)*p*(1-p) / l**2 
+  n <- ceiling((4*qnorm(alpha,lower.tail = F)**2)*p*(1-p) / l**2 )
   
   # tamaño muestral en el peor caso
-  n2 <- (qnorm(alpha/2,lower.tail = F)**2)/ l**2 
+  n2 <- ceiling((qnorm(alpha/2,lower.tail = F)**2)/ l**2 )
   
   df <-data.frame(n,n2)
   names(df) <- c('p aproximado','peor caso')
   return(df)
 }
 #' Tamaño muestral con $p \approx 0.3$ y peor caso $p = 1/2$
-n_size(nivel_conf,0.3,error_max)
-
-#' Tamaño muestral con $p=0.3686291$ (calulado en el apartado interior) y peor caso $p = 1/2$
 n_size(nivel_conf,p,error_max)
 
 
